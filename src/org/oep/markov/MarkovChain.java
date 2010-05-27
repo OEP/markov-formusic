@@ -23,10 +23,10 @@ public class MarkovChain<T extends Comparable<T>> {
 	private Random RNG = new Random();
 	
 	/** Node that marks the beginning of a phrase. All Markov phrases start here. */
-	protected Node mHeader = new Node();
+	protected Node mHeader = new Node(-1);
 	
 	/** Node that signals the end of a phrase. This node should have no edges. */
-	private Node mTrailer = new Node();
+	private Node mTrailer = new Node(-2);
 	
 	/** Purely for informational purposes. This keeps track of how many edges our graph has. */
 	private int mEdgeCount = 0;
@@ -51,8 +51,8 @@ public class MarkovChain<T extends Comparable<T>> {
 	 */
 	public synchronized void clear() {
 		mNodes.clear();
-		mHeader = new Node();
-		mTrailer = new Node();
+		mHeader = new Node(-1);
+		mTrailer = new Node(-2);
 		mEdgeCount = 0;
 	}
 	
@@ -91,14 +91,17 @@ public class MarkovChain<T extends Comparable<T>> {
 	}
 	
 	public T nextValue() {
-		if(mCurrent == null) return null;
-		
+		if(mCurrent == mHeader) mCurrent = mHeader.next();
+		if(mCurrent == null || mCurrent == mTrailer) return null;
+
+//		System.out.println("Returning index: " + mCurrentIndex);
 		T data = mCurrent.data.get(mCurrentIndex);
 		mCurrentIndex++;
 		
 		if(mCurrentIndex >= mCurrent.data.size()) {
 			mCurrent = mCurrent.next();
 			mCurrentIndex = 0;
+			System.out.println("Next node: " + mCurrent.id);
 		}
 		
 		return data;
@@ -246,7 +249,7 @@ public class MarkovChain<T extends Comparable<T>> {
 		
 		Node node;
 		if(mNodes.containsKey(tuple) == false) {
-			node = new Node(tuple);
+			node = new Node(tuple, getNodeCount());
 			mNodes.put(tuple, node);
 		}
 		else {
@@ -318,6 +321,8 @@ public class MarkovChain<T extends Comparable<T>> {
 	 *
 	 */
 	public class Node implements Comparable<Node> {
+		public int id = 0;
+		
 		/** The data this node represents */
 		public Tuple data = new Tuple();
 		
@@ -327,16 +332,17 @@ public class MarkovChain<T extends Comparable<T>> {
 		/**
 		 * Blank constructor for data-less nodes (the header or trailer)
 		 */
-		public Node() {
-			
+		public Node(int id) {
+			this.id = id;
 		}
 		
 		/**
 		 * Constructor for node which will contain data.
 		 * @param d the data this node should represent
 		 */
-		public Node(Tuple t) {
-			data = t;	
+		public Node(Tuple t, int id) {
+			data = t;
+			this.id = id;
 		}
 		
 		/**

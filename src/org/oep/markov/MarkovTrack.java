@@ -53,8 +53,14 @@ public class MarkovTrack extends MarkovChain<MarkovTrack.MidiMessageWrapper> {
 			lastTick = event.getTick();
 			msgs.add(wrap);
 		}
+		
+		System.out.printf("Analyzed %d messages\n", t.size());
 		this.addPhrase(msgs);
+		
+		System.out.println("Note brain size: " + getNodeCount());
 		mLengthChain.addPhrase(times);
+		System.out.println("Length brain size: " + mLengthChain.getNodeCount());
+		
 	}
 	
 	public void exportTrack(String filename, float divisionType, int resolution, int fileType)
@@ -72,6 +78,7 @@ public class MarkovTrack extends MarkovChain<MarkovTrack.MidiMessageWrapper> {
 		MidiMessageWrapper wrpmsg;
 		while((wrpmsg = nextValue()) != null) {
 			MidiMessage msg = wrpmsg.getMessage();
+			wrpmsg = this.nextValue();
 			
 			long dt = mLengthChain.nextChainedValue();
 			ticks += dt;
