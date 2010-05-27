@@ -23,18 +23,18 @@ public class MarkovTrack extends MarkovChain<MarkovTrack.MidiMessageWrapper> {
 	
 	public void importMIDI(File file) throws InvalidMidiDataException, IOException {
 		Sequence s = MidiSystem.getSequence(file);
-		learnSequence(s);
+		learnSequence(s, MidiSystem.getMidiFileFormat(file));
 	}
 	
-	public void learnSequence(Sequence s) {
+	public void learnSequence(Sequence s, MidiFileFormat fmt) {
 		Track tracks[] = s.getTracks();
-		
 		for(int i = 0; i < tracks.length; i++) {
-			learnTrack(tracks[i]);
+			learnTrack(tracks[i], fmt);
 		}
+		
 	}
 	
-	public void learnTrack(Track t) {
+	public void learnTrack(Track t, MidiFileFormat fmt) {
 		if(t.size() == 0) return;
 		ArrayList<MidiMessageWrapper> msgs = new ArrayList<MidiMessageWrapper>();
 		ArrayList<Long> times = new ArrayList<Long>();
@@ -44,6 +44,11 @@ public class MarkovTrack extends MarkovChain<MarkovTrack.MidiMessageWrapper> {
 		MidiMessage msg = event.getMessage();
 		MidiMessageWrapper wrap = new MidiMessageWrapper(msg);
 		times.add(lastTick);
+		
+		// TODO: Assumed Sequence is PPM here
+		int resolution = fmt.getResolution();
+		long beats = event.getTick() / resolution;
+		int adds = 0;
 		
 		for(int i = 1; i < t.size(); i++) {
 			event = t.get(i);
@@ -55,7 +60,13 @@ public class MarkovTrack extends MarkovChain<MarkovTrack.MidiMessageWrapper> {
 		}
 		
 		System.out.printf("Analyzed %d messages\n", t.size());
-		this.addPhrase(msgs);
+		
+		if(msgs.size() > 0) {
+			adds++;
+			this.addPhrase(msgs);
+		}
+		
+		System.out.println("Adds: " + adds);
 		
 		System.out.println("Note brain size: " + getNodeCount());
 		mLengthChain.addPhrase(times);

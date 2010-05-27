@@ -66,8 +66,8 @@ public class TrackTest {
 				Sequence s = MidiSystem.getSequence(f);
 				Track[] tracks = s.getTracks();
 //				track.learnSequence(s);
-				track.learnTrack(tracks[1]);
 				MidiFileFormat fmt = MidiSystem.getMidiFileFormat(f);
+				track.learnTrack(tracks[1], fmt);
 				
 				System.out.printf("Writing output-%d.mid...\n", i);
 				System.out.println("Resolution: " + fmt.getResolution());

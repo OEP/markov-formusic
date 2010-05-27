@@ -345,6 +345,52 @@ public class MarkovChain<T extends Comparable<T>> {
 			this.id = id;
 		}
 		
+		public boolean isTerminal() {
+			return mEdges.size() == 0;
+		}
+		
+		/**
+		 * Calculate the terminal path length of this node.
+		 * @return shortest length to terminal node
+		 */
+		public int getTerminalPathLength() {
+			return doGetTerminalPathLength(new Vector<Node>());
+		}
+		
+		private int doGetTerminalPathLength(Vector<Node> visits) {
+			if(isTerminal()) return 0;
+			
+			int i = 0;
+			Edge e = mEdges.get(i);
+			while(visits.contains(e.node) && i < mEdges.size()) {
+				i++;
+				e = mEdges.get(i);
+			}
+			
+			// In case we can't terminate
+			if(i == mEdges.size()) {
+				return Integer.MAX_VALUE;
+			}
+			
+			int pathLength = e.node.getTerminalPathLength();
+			if(pathLength == Integer.MAX_VALUE) {
+				return pathLength;
+			}
+			int min = pathLength + 1;
+				
+			
+			for(; i < mEdges.size(); i++) {
+				e = mEdges.get(i);
+				pathLength = e.node.getTerminalPathLength();
+				
+				// Overflow-safe!
+				min = Math.min(min,
+						(pathLength == Integer.MAX_VALUE) ? pathLength : pathLength + 1);
+			}
+			
+			return min;
+		}
+		
 		/**
 		 * Add more weight to the given node
 		 * or create an edge to that node if we didn't
@@ -372,6 +418,18 @@ public class MarkovChain<T extends Comparable<T>> {
 		 */
 		public int getTupleSize() {
 			return data.size();
+		}
+		
+		protected Node nextTerminal() {
+			if(mEdges.size() == 0) return null;
+			
+			Edge e = mEdges.get(0);
+			
+			
+			
+			for(int i = 0; i < mEdges.size(); i++) {
+				Edge e = mEdges.get(i);
+			}
 		}
 		
 		/**
